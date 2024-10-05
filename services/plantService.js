@@ -1,15 +1,15 @@
+const supabase = require("../config/supabase");
+const { ERROR_TYPES, HTTP_STATUS_CODES } = require("../utils/constants");
+const CustomError = require("../utils/CustomError");
+const { generateId, flySearch } = require("../utils/general-functions");
 const {
   MEDIA_MESSAGES,
   DATA_MESSAGES,
 } = require("../utils/message/common-message");
-const supabase = require("../config/supabase");
-const CustomError = require("../utils/CustomError");
-const publicMediaFiles = require("./internal/publicMediaFiles");
-const { HTTP_STATUS_CODES, ERROR_TYPES } = require("../utils/constants");
 const { Transfer, ErrorResult, SuccessResult } = require("../utils/Result");
-const { generateId, flySearch } = require("../utils/general-functions");
+const publicMediaFiles = require("./internal/publicMediaFiles");
 
-const createPark = async (data) => {
+const createPlant = async (data) => {
   try {
     const mediaToPublicUrl = await publicMediaFiles(data?.image);
     const { response, statusCode } = mediaToPublicUrl;
@@ -22,27 +22,25 @@ const createPark = async (data) => {
     }
 
     const { data: mediaFileData } = response;
-    const { name, description, location } = data;
+    const { name, description } = data;
 
-    const { error } = await supabase.from("parks").insert([
+    const { error } = await supabase.from("plants").insert([
       {
         id: generateId(),
         name,
         description,
         image_url: mediaFileData?.imageUrl,
-        location: `POINT(${location[0]} ${location[1]})`,
       },
     ]);
 
-    if (error) {
+    if (error)
       return Transfer(
         new CustomError(ERROR_TYPES.SUPABASE, error),
         HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
       );
-    }
 
     return Transfer(
-      new SuccessResult(DATA_MESSAGES.POST_SUCCESS),
+      new SuccessResult(DATA_MESSAGES.GET_SUCCESS),
       HTTP_STATUS_CODES.OK
     );
   } catch (err) {
@@ -53,9 +51,9 @@ const createPark = async (data) => {
   }
 };
 
-const getAllParks = async (query = null) => {
+const getAllPlants = async (query = null) => {
   try {
-    const { data, error } = await supabase.rpc("get_parks_with_coordinates");
+    const { data, error } = await supabase.from("plants").select("*");
 
     if (error)
       return Transfer(
@@ -78,33 +76,7 @@ const getAllParks = async (query = null) => {
   }
 };
 
-const getParkById = async (id) => {
-  try {
-    const { data, error } = await supabase
-      .rpc("get_parks_with_coordinates")
-      .eq("id", id)
-      .single();
-
-    if (error)
-      return Transfer(
-        new CustomError(ERROR_TYPES.SUPABASE, error),
-        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
-      );
-
-    return Transfer(
-      new SuccessResult(DATA_MESSAGES.GET_SUCCESS, data),
-      HTTP_STATUS_CODES.OK
-    );
-  } catch (err) {
-    return Transfer(
-      new CustomError(ERROR_TYPES.SUPABASE, err),
-      HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
-    );
-  }
-};
-
 module.exports = {
-  createPark,
-  getAllParks,
-  getParkById,
+  createPlant,
+  getAllPlants,
 };

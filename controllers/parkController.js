@@ -15,7 +15,9 @@ const createPark = async (req, res) => {
 
 const getAllParks = async (req, res) => {
   try {
-    const { response, statusCode } = await parkService.getAllParks();
+    const parkName = req.query?.name;
+
+    const { response, statusCode } = await parkService.getAllParks(parkName);
     res.status(statusCode).json(response);
   } catch (err) {
     res

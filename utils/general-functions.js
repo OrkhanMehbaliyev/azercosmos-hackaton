@@ -6,4 +6,10 @@ const generateId = () => {
   });
 };
 
-module.exports = { generateId };
+const flySearch = (data, searchQuery) => {
+  return data?.filter((item) =>
+    item?.name?.toLowerCase().includes(searchQuery?.toLowerCase())
+  );
+};
+
+module.exports = { generateId, flySearch };
