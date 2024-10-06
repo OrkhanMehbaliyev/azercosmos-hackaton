@@ -68,11 +68,12 @@ const getPlantByFile = async (body) => {
 
     console.log("plantName", plantName);
 
-    const { data, error } = supabase
+    const { data, error } = await supabase
       .from("plants")
       .select("*")
-      .eq("name", plantName)
-      .single();
+      .eq("name", plantName.trim());
+
+    console.log("data", data);
 
     if (error)
       return Transfer(
