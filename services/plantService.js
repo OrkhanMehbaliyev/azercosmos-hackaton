@@ -1,3 +1,4 @@
+const model = require("../config/generativeAI");
 const supabase = require("../config/supabase");
 const { ERROR_TYPES, HTTP_STATUS_CODES } = require("../utils/constants");
 const CustomError = require("../utils/CustomError");
@@ -52,10 +53,66 @@ const createPlant = async (data) => {
   }
 };
 
+const getPlantByFile = async (body) => {
+  try {
+    const prompt = "Please tell me just plant name. No other words";
+    const image = {
+      inlineData: {
+        data: body?.image,
+        mimeType: "image/png",
+      },
+    };
+
+    const result = await model.generateContent([prompt, image]);
+    const plantName = result.response.text();
+
+    console.log("plantName", plantName);
+
+    const { data, error } = supabase
+      .from("plants")
+      .select("*")
+      .eq("name", plantName)
+      .single();
+
+    if (error)
+      return Transfer(
+        new CustomError(ERROR_TYPES.SUPABASE, error),
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+
+    if (body?.isInPlace && body?.park_id && body?.location) {
+      const { error: errorUploadedPlants } = supabase
+        .from("uploaded_plants")
+        .insert([
+          {
+            park_id: body?.park_id,
+            plant_id: data?.id,
+            location: `POINT(${body?.location[0]} ${body?.location[1]})`,
+          },
+        ]);
+
+      if (errorUploadedPlants)
+        return Transfer(
+          new CustomError(ERROR_TYPES.SUPABASE, err),
+          HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    return Transfer(
+      new SuccessResult(DATA_MESSAGES.GET_SUCCESS, data),
+      HTTP_STATUS_CODES.OK
+    );
+  } catch (err) {
+    return Transfer(
+      new CustomError(ERROR_TYPES.SUPABASE, err),
+      HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 const getAllPlants = async (query = null) => {
   try {
     const { data, error } = await supabase.from("plants").select("*");
-
     if (error)
       return Transfer(
         new CustomError(ERROR_TYPES.SUPABASE, error),
@@ -143,4 +200,5 @@ module.exports = {
   createPlant,
   getAllPlants,
   getPlantById,
+  getPlantByFile,
 };

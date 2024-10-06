@@ -16,6 +16,20 @@ const createPlant = async (req, res) => {
   }
 };
 
+const getPlantByFile = async (req, res) => {
+  try {
+    const { response, statusCode } = await plantService.getPlantByFile(
+      req?.body
+    );
+
+    res.status(statusCode).json(response);
+  } catch (err) {
+    res
+      .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
+      .json(new CustomError(ERROR_TYPES.CONTROLLER_LEVEL, err));
+  }
+};
+
 const getAllPlants = async (req, res) => {
   try {
     const plantName = req.query?.name;
@@ -46,4 +60,5 @@ module.exports = {
   createPlant,
   getAllPlants,
   getPlantById,
+  getPlantByFile,
 };
