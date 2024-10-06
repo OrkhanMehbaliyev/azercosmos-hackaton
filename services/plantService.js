@@ -55,7 +55,8 @@ const createPlant = async (data) => {
 
 const getPlantByFile = async (body) => {
   try {
-    const prompt = "Please tell me just plant name. No other words";
+    const prompt =
+      "Please tell me just plant name. No other words. You have this options: Medlar, Persian Silk Tree,Violet, Poppy, Tulips, Daisy  ";
     const image = {
       inlineData: {
         data: body?.image,
@@ -66,14 +67,11 @@ const getPlantByFile = async (body) => {
     const result = await model.generateContent([prompt, image]);
     const plantName = result.response.text();
 
-    console.log("plantName", plantName);
-
     const { data, error } = await supabase
       .from("plants")
       .select("*")
-      .eq("name", plantName.trim());
-
-    console.log("data", data);
+      .eq("name", plantName.trim())
+      .single();
 
     if (error)
       return Transfer(
