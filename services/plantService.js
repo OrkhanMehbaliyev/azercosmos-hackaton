@@ -178,8 +178,8 @@ const getPlantById = async (id) => {
       );
 
     const locations = dataUploadedPlant.map((uploadedPlant) => ({
-      latitude: uploadedPlant?.latitude,
       longitude: uploadedPlant?.longitude,
+      latitude: uploadedPlant?.latitude,
     }));
 
     const finalData = { ...dataPlant, parks, locations };
