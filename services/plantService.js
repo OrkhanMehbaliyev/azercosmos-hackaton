@@ -111,7 +111,7 @@ const getPlantById = async (id) => {
     });
 
     const { data: parks, error: errorParks } = await supabase
-      .from("parks")
+      .rpc("get_parks_with_coordinates")
       .select("*")
       .in("id", parkIds);
 
