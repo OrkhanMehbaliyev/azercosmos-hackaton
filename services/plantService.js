@@ -8,6 +8,7 @@ const {
 } = require("../utils/message/common-message");
 const { Transfer, ErrorResult, SuccessResult } = require("../utils/Result");
 const publicMediaFiles = require("./internal/publicMediaFiles");
+const { getParkById } = require("./parkService");
 
 const createPlant = async (data) => {
   try {
@@ -76,7 +77,70 @@ const getAllPlants = async (query = null) => {
   }
 };
 
+const getPlantById = async (id) => {
+  try {
+    const { data: dataPlant, error: errorPlant } = await supabase
+      .from("plants")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (errorPlant)
+      return Transfer(
+        new CustomError(ERROR_TYPES.SUPABASE, errorPlant),
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+
+    const { data: dataUploadedPlant, error: errorUploadedPlant } =
+      await supabase
+        .rpc("get_plants_by_plant", { input_plant_id: dataPlant?.id })
+        .select("*");
+
+    if (errorUploadedPlant)
+      return Transfer(
+        new CustomError(ERROR_TYPES.SUPABASE, errorUploadedPlant),
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+
+    const parkIds = [];
+
+    dataUploadedPlant.forEach((uploadedPlant) => {
+      if (!parkIds.includes(uploadedPlant?.park_id)) {
+        parkIds.push(String(uploadedPlant?.park_id));
+      }
+    });
+
+    const { data: parks, error: errorParks } = await supabase
+      .from("parks")
+      .select("*")
+      .in("id", parkIds);
+
+    if (errorParks)
+      return Transfer(
+        new CustomError(ERROR_TYPES.SUPABASE, errorParks),
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+
+    const locations = dataUploadedPlant.map((uploadedPlant) => ({
+      latitude: uploadedPlant?.latitude,
+      longitude: uploadedPlant?.longitude,
+    }));
+
+    const finalData = { ...dataPlant, parks, locations };
+    return Transfer(
+      new SuccessResult(DATA_MESSAGES.GET_SUCCESS, finalData),
+      HTTP_STATUS_CODES.OK
+    );
+  } catch (err) {
+    return Transfer(
+      new CustomError(ERROR_TYPES.SUPABASE, err),
+      HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 module.exports = {
   createPlant,
   getAllPlants,
+  getPlantById,
 };

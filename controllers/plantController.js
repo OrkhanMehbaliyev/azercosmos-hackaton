@@ -29,7 +29,21 @@ const getAllPlants = async (req, res) => {
   }
 };
 
+const getPlantById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { response, statusCode } = await plantService.getPlantById(id);
+
+    res.status(statusCode).json(response);
+  } catch (err) {
+    res
+      .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
+      .json(new CustomError(ERROR_TYPES.CONTROLLER_LEVEL, err));
+  }
+};
+
 module.exports = {
   createPlant,
   getAllPlants,
+  getPlantById,
 };
