@@ -1,6 +1,7 @@
 const DATA_MESSAGES = {
   GET_SUCCESS: "Data retrieved successfully",
   POST_SUCCESS: "Data sent successfully",
+  DELETE_SUCCESS: "Data deleted successfully",
   ERROR: "",
 };
 
