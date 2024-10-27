@@ -54,7 +54,11 @@ const createReport = async (data) => {
 
 const getAllReports = async (query) => {
   try {
-    const { data, error } = await supabase.rpc("get_reports_with_coordinates");
+    const { data, error } = query
+      ? await supabase
+          .rpc("get_reports_with_coordinates")
+          .eq("problem_type_id", query)
+      : await supabase.rpc("get_reports_with_coordinates");
 
     if (error)
       return Transfer(
@@ -63,10 +67,7 @@ const getAllReports = async (query) => {
       );
 
     return Transfer(
-      new SuccessResult(
-        DATA_MESSAGES.GET_SUCCESS,
-        query ? data.filter((item) => item.problem_type_id == query) : data
-      ),
+      new SuccessResult(DATA_MESSAGES.GET_SUCCESS, data),
       HTTP_STATUS_CODES.OK
     );
   } catch (err) {
