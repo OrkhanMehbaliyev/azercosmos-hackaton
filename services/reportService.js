@@ -7,6 +7,7 @@ const {
   DATA_MESSAGES,
 } = require("../utils/message/common-message");
 const { Transfer, ErrorResult, SuccessResult } = require("../utils/Result");
+const fireAIModel = require("./internal/fireAIModel");
 const publicMediaFiles = require("./internal/publicMediaFiles");
 
 const createReport = async (data) => {
@@ -23,13 +24,22 @@ const createReport = async (data) => {
 
     const { data: mediaFileData } = response;
 
+    // AI validation
+    const { response: responseFireAIModel, statusCode: statusCodeFireAIModel } =
+      await fireAIModel(mediaFileData?.imageUrl);
+
+    if (!(responseFireAIModel instanceof SuccessResult))
+      return Transfer(responseFireAIModel, statusCodeFireAIModel);
+
+    // console.log("responseFireAIModel", responseFireAIModel);
+    // DB operation
     const { error } = await supabase.from("reports").insert([
       {
         id: generateId(),
         user_id: data?.user_id,
         problem_type_id: data?.problem_type_id,
         description: data?.description,
-        image_url: mediaFileData?.imageUrl,
+        image_url: responseFireAIModel?.data?.drawed_image_url,
         location: `POINT(${data?.location[0]} ${data?.location[1]})`,
       },
     ]);
