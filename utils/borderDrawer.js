@@ -33,13 +33,13 @@ async function borderDrawer(imageUrl, predictions) {
       );
 
       // Add label with class and confidence
-      ctx.fillStyle = "red";
-      ctx.font = "16px Arial";
-      ctx.fillText(
-        `${prediction.class} (${(prediction.confidence * 100).toFixed(1)}%)`,
-        prediction.x - prediction.width / 2,
-        prediction.y - prediction.height / 2 - 5
-      );
+      // ctx.fillStyle = "red";
+      // ctx.font = "16px Arial";
+      // ctx.fillText(
+      //   `${prediction.class} (${(prediction.confidence * 100).toFixed(1)}%)`,
+      //   prediction.x - prediction.width / 2,
+      //   prediction.y - prediction.height / 2 - 5
+      // );
     });
 
     const editedImageBase64 = canvas.toDataURL("image/png");
