@@ -31,7 +31,6 @@ const createReport = async (data) => {
     if (!(responseFireAIModel instanceof SuccessResult))
       return Transfer(responseFireAIModel, statusCodeFireAIModel);
 
-    // console.log("responseFireAIModel", responseFireAIModel);
     // DB operation
     const { error } = await supabase.from("reports").insert([
       {
